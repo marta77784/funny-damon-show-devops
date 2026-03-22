@@ -2,3 +2,4 @@ venv/
 __pycache__/
 *.pyc
 .env # если будешь хранить ключ в .env
+.env
