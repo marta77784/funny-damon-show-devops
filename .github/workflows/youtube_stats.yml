@@ -1,0 +1,28 @@
+name: YouTube Stats Daily
+
+on:
+  schedule:
+    - cron: '0 9 * * *'  # каждый день в 9 утра
+  workflow_dispatch:  # можно запустить вручную
+
+jobs:
+  collect-stats:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.12'
+          
+      - name: Install dependencies
+        run: pip install google-api-python-client boto3 python-dotenv
+        
+      - name: Run stats script
+        env:
+          YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: us-west-2
+        run: python3 youtube_stats.py
