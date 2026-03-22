@@ -3,3 +3,6 @@ __pycache__/
 *.pyc
 .env # если будешь хранить ключ в .env
 .env
+terraform/.terraform
+terraform/*.tfstate
+terraform/*.tfstate.backup
