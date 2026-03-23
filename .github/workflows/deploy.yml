@@ -1,0 +1,42 @@
+name: Deploy to AWS Lambda
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: |
+          pip install requests google-api-python-client \
+            --target ./package \
+            --platform manylinux2014_x86_64 \
+            --implementation cp \
+            --python-version 3.12 \
+            --only-binary=:all:
+
+      - name: Create ZIP
+        run: |
+          cd package && zip -r ../lambda.zip . && cd ..
+          zip lambda.zip lambda_function.py
+
+      - name: Deploy to Lambda
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: us-west-2
+        run: |
+          aws lambda update-function-code \
+            --function-name funny-damon-stats \
+            --zip-file fileb://lambda.zip
