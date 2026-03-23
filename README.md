@@ -9,18 +9,18 @@ Automated YouTube channel analytics system built with AWS and Python.
 This project automatically collects YouTube statistics for two channels daily and delivers them via Telegram bot and a public web dashboard.
 
 ## 🏗️ Architecture
-YouTube API → AWS Lambda → S3 → Telegram Bot
-                                → Netlify Dashboard
-
-## ⚙️ Tech Stack
-- **AWS Lambda** — serverless function execution
-- **AWS S3** — data storage (JSON stats files)
-- **AWS EventBridge** — daily schedule trigger (9:00 AM EST)
-- **YouTube Data API v3** — channel statistics
-- **Telegram Bot API** — daily notifications
-- **Netlify** — static dashboard hosting
-- **Python 3.12** — core language
-
+```mermaid
+graph TD
+    EB[⏰ EventBridge\nEvery day 9AM EST] --> LB[⚡ AWS Lambda\nfunny-damon-stats]
+    LB --> YT1[🎬 YouTube API\nFunny Damon Show]
+    LB --> YT2[🎬 YouTube API\nDamon Dylan]
+    YT1 --> S3[🪣 AWS S3\nfunny-damon-show-devops]
+    YT2 --> S3
+    S3 --> TG[📱 Telegram Bot\nDaily Stats]
+    S3 --> NF[🌐 Netlify Dashboard\nfunny-damon-show-stats.netlify.app]
+    GH[👩‍💻 GitHub Push] --> GA[🔄 GitHub Actions CI/CD]
+    GA --> LB
+```
 ## 📦 Features
 - Monitors 2 YouTube channels: Funny Damon Show & Damon Dylan
 - Runs automatically every day at 9:00 AM
