@@ -7,7 +7,7 @@
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: Arial, sans-serif; background: #0f0f0f; color: white; padding: 30px; }
-        h1 { text-align: center; font-size: 2em; margin-bottom: 10px; color: #fff; }
+        h1 { text-align: center; font-size: 2em; margin-bottom: 10px; }
         .updated { text-align: center; color: #aaa; margin-bottom: 30px; }
         .channel-card { background: #1a1a1a; border-radius: 15px; padding: 30px; margin: 20px auto; max-width: 700px; }
         h2 { font-size: 1.8em; margin-bottom: 20px; }
@@ -15,48 +15,67 @@
         .stat { text-align: center; }
         .number { font-size: 2em; font-weight: bold; }
         .label { color: #aaa; margin-top: 8px; font-size: 0.9em; }
+        .loading { text-align: center; color: #aaa; padding: 50px; }
     </style>
 </head>
 <body>
     <h1>📊 YouTube Analytics</h1>
-    <p class="updated">Updated: 2026-03-22 22:21</p>
-    
-    <div class="channel-card">
-        <h2 style="color:#ff0000">Funny Damon Show</h2>
+    <p class="updated" id="updated">Loading...</p>
+    <div id="funny-card" class="loading">Loading Funny Damon Show...</div>
+    <div id="damon-card" class="loading">Loading Damon Dylan...</div>
+
+<script>
+const BUCKET = "https://funny-damon-show-devops.s3.us-west-2.amazonaws.com";
+
+function formatNum(n) {
+    return parseInt(n).toLocaleString();
+}
+
+function card(stats, color, id) {
+    document.getElementById(id).className = 'channel-card';
+    document.getElementById(id).innerHTML = `
+        <h2 style="color:${color}">${stats.title}</h2>
         <div class="stats-grid">
             <div class="stat">
-                <div class="number" style="color:#ff0000">1,710,000</div>
+                <div class="number" style="color:${color}">${formatNum(stats.subscribers)}</div>
                 <div class="label">👥 Subscribers</div>
             </div>
             <div class="stat">
-                <div class="number" style="color:#ff0000">1,271,292,845</div>
+                <div class="number" style="color:${color}">${formatNum(stats.views)}</div>
                 <div class="label">👀 Total Views</div>
             </div>
             <div class="stat">
-                <div class="number" style="color:#ff0000">1403</div>
+                <div class="number" style="color:${color}">${stats.videos}</div>
                 <div class="label">🎥 Videos</div>
             </div>
         </div>
-    </div>
-    
-    
-    <div class="channel-card">
-        <h2 style="color:#ff6600">Damon Dylan</h2>
-        <div class="stats-grid">
-            <div class="stat">
-                <div class="number" style="color:#ff6600">339,000</div>
-                <div class="label">👥 Subscribers</div>
-            </div>
-            <div class="stat">
-                <div class="number" style="color:#ff6600">435,784,183</div>
-                <div class="label">👀 Total Views</div>
-            </div>
-            <div class="stat">
-                <div class="number" style="color:#ff6600">1136</div>
-                <div class="label">🎥 Videos</div>
-            </div>
-        </div>
-    </div>
-    
+    `;
+}
+
+async function loadStats(handle, color, id) {
+    const dates = [];
+    const today = new Date();
+    for (let i = -1; i <= 1; i++) {
+        const d = new Date(today);
+        d.setDate(d.getDate() + i);
+        dates.push(d.toISOString().split('T')[0]);
+    }
+    for (const date of dates) {
+        try {
+            const res = await fetch(`${BUCKET}/${handle}_stats_${date}.json`);
+            if (res.ok) {
+                const stats = await res.json();
+                card(stats, color, id);
+                document.getElementById('updated').textContent = `Updated: ${stats.date}`;
+                return;
+            }
+        } catch(e) {}
+    }
+    document.getElementById(id).textContent = 'No data available';
+}
+
+loadStats('funnydamon', '#ff0000', 'funny-card');
+loadStats('damondylan', '#ff6600', 'damon-card');
+</script>
 </body>
 </html>
